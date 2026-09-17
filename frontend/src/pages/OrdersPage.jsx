@@ -60,10 +60,10 @@ export default function OrdersPage() {
   }, [status, paymentStatus])
 
   return (
-    <div className="container py-5">
+    <div className="container py-5 page-shell">
       <div className="d-flex align-items-center justify-content-between gap-3 mb-4 flex-wrap">
         <div>
-          <h1 className="h3 mb-1">Orders</h1>
+          {user.role !== 'admin' && <h1 className="h3 mb-1">Orders</h1>}
           <p className="text-secondary mb-0">
             {user.role === 'shop' && 'Incoming shop orders'}
             {user.role === 'rider' && 'Assigned and available pickup orders'}
@@ -75,6 +75,11 @@ export default function OrdersPage() {
           <div className="d-flex gap-2">
             <Link to="/" className="btn btn-success">Browse shops</Link>
             <Link to="/orders/new" className="btn btn-outline-secondary">Package order</Link>
+          </div>
+        )}
+        {user.role === 'rider' && (
+          <div className="d-flex gap-2">
+            <Link to="/rider/jobs" className="btn btn-success">Available jobs</Link>
           </div>
         )}
       </div>

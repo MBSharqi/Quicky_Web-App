@@ -99,6 +99,29 @@ class OrderPolicy
         };
     }
 
+    public function complete(User $user, Order $order): bool
+    {
+        if ($order->payment_status === PaymentStatus::Paid && $order->status === OrderStatus::Delivered) {
+            return false;
+        }
+
+        if ($order->status === OrderStatus::Cancelled) {
+            return false;
+        }
+
+        $isAssignee = match ($user->role) {
+            Role::Admin => true,
+            Role::Rider => $order->rider_id === $user->id,
+            default => false,
+        };
+
+        if (! $isAssignee) {
+            return false;
+        }
+
+        return in_array($order->status, [OrderStatus::PickedUp, OrderStatus::Delivered], true);
+    }
+
     public function updateLocation(User $user, Order $order): bool
     {
         return $user->role === Role::Rider

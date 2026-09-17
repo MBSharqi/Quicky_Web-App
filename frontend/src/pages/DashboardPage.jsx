@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, Navigate } from 'react-router-dom'
 import { getDashboard } from '../api/dashboard'
 import { useAuth } from '../context/AuthContext'
 import ShopDashboardPage from './ShopDashboardPage'
@@ -11,7 +11,7 @@ function statusLabel(status) {
 function StatCard({ label, value }) {
   return (
     <div className="col-6 col-md-3">
-      <div className="border rounded-3 p-3 h-100 bg-white">
+      <div className="stat-tile">
         <div className="text-secondary small mb-1">{label}</div>
         <div className="fs-4 fw-semibold">{value}</div>
       </div>
@@ -30,7 +30,7 @@ export default function DashboardPage() {
   const [error, setError] = useState('')
 
   useEffect(() => {
-    if (user.role === 'shop') {
+    if (user.role === 'admin' || user.role === 'shop') {
       setLoading(false)
       return undefined
     }
@@ -61,6 +61,10 @@ export default function DashboardPage() {
 
   if (user.role === 'shop') {
     return <ShopDashboardPage />
+  }
+
+  if (user.role === 'admin') {
+    return <Navigate to="/admin" replace />
   }
 
   const cards = (() => {
@@ -101,7 +105,7 @@ export default function DashboardPage() {
   })()
 
   return (
-    <div className="container py-5">
+    <div className="container py-5 page-shell">
       <div className="d-flex align-items-center justify-content-between gap-3 mb-4 flex-wrap">
         <div>
           <h1 className="h3 mb-1">Dashboard</h1>
@@ -111,8 +115,18 @@ export default function DashboardPage() {
         </div>
         <div className="d-flex gap-2">
           {user.role === 'admin' && (
-            <Link to="/admin/shops" className="btn btn-success">
-              Manage shops
+            <>
+              <Link to="/admin/shops" className="btn btn-success">
+                Manage shops
+              </Link>
+              <Link to="/admin/riders" className="btn btn-outline-success">
+                Manage riders
+              </Link>
+            </>
+          )}
+          {user.role === 'rider' && (
+            <Link to="/rider/jobs" className="btn btn-success">
+              Available jobs
             </Link>
           )}
           {['admin', 'customer', 'rider'].includes(user.role) && (

@@ -69,7 +69,7 @@ export default function ShopDashboardPage() {
   }
 
   return (
-    <div className="container py-5" style={{ maxWidth: 860 }}>
+    <div className="container py-5 page-shell" style={{ maxWidth: 860 }}>
       <div className="d-flex justify-content-between align-items-start gap-3 mb-4 flex-wrap">
         <div>
           <h1 className="h3 mb-1">{shop.name}</h1>

@@ -5,6 +5,7 @@ import {
   acceptShopOrder,
   assignOrder,
   claimOrder,
+  completeOrder,
   getOrder,
   listRiders,
   rejectShopOrder,
@@ -32,7 +33,7 @@ function nextActions(user, order) {
     if (order.status === 'assigned') {
       return [{ label: 'Mark picked up', status: 'picked_up', variant: 'success' }]
     }
-    if (order.status === 'picked_up') {
+    if (order.status === 'picked_up' && order.payment_status === 'paid') {
       return [{ label: 'Mark delivered', status: 'delivered', variant: 'success' }]
     }
   }
@@ -249,6 +250,20 @@ export default function OrderDetailPage() {
     }
   }
 
+  async function handleComplete() {
+    setBusy(true)
+    setActionError('')
+    try {
+      const updated = await completeOrder(id)
+      setOrder(updated)
+      setTracking(false)
+    } catch (err) {
+      setActionError(err.response?.data?.message || err.response?.data?.errors?.order?.[0] || 'Unable to complete order.')
+    } finally {
+      setBusy(false)
+    }
+  }
+
   if (loading) {
     return <div className="container py-5 text-secondary">Loading...</div>
   }
@@ -277,6 +292,10 @@ export default function OrderDetailPage() {
   const canShopAccept = user.role === 'shop' && order.status === 'pending'
   const canShopRelease = user.role === 'shop' && order.status === 'accepted'
   const canRiderClaim = user.role === 'rider' && order.status === 'ready_for_pickup' && !order.rider_id
+  const canComplete = ['admin', 'rider'].includes(user.role)
+    && (user.role === 'admin' || order.rider_id === user.id)
+    && ['picked_up', 'delivered'].includes(order.status)
+    && order.payment_status !== 'paid'
 
   return (
     <div className="container py-5" style={{ maxWidth: 900 }}>
@@ -395,6 +414,12 @@ export default function OrderDetailPage() {
         {canRiderClaim && (
           <button type="button" className="btn btn-success" disabled={busy} onClick={handleClaim}>
             Claim this order
+          </button>
+        )}
+
+        {canComplete && (
+          <button type="button" className="btn btn-success" disabled={busy} onClick={handleComplete}>
+            Complete & collect COD
           </button>
         )}
 

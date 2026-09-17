@@ -19,6 +19,7 @@ use App\Models\Shop;
 use App\Models\User;
 use App\Notifications\OrderAssigned;
 use App\Notifications\OrderCreated;
+use App\Notifications\OrderPaymentUpdated;
 use App\Notifications\OrderStatusUpdated;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -224,6 +225,20 @@ class OrderController extends Controller
         ]);
     }
 
+    public function available(Request $request): JsonResponse
+    {
+        abort_unless($request->user()->role === Role::Rider, 403);
+
+        $orders = Order::query()
+            ->with(['customer:id,name,email', 'shop:id,name,slug,address,city,phone', 'items'])
+            ->where('status', OrderStatus::ReadyForPickup)
+            ->whereNull('rider_id')
+            ->latest()
+            ->paginate(15);
+
+        return response()->json($orders);
+    }
+
     public function updatePayment(UpdateOrderPaymentRequest $request, Order $order): JsonResponse
     {
         $order->update([
@@ -231,6 +246,37 @@ class OrderController extends Controller
         ]);
 
         $order->load(['customer:id,name,email', 'rider:id,name,email', 'shop:id,name,slug', 'items']);
+
+        $recipients = collect([$order->customer])
+            ->when($order->shop?->owner, fn ($collection) => $collection->push($order->shop->owner))
+            ->filter(fn (User $user) => $user->id !== $request->user()->id)
+            ->unique('id');
+
+        Notification::send($recipients, new OrderPaymentUpdated($order));
+
+        return response()->json([
+            'order' => $order,
+        ]);
+    }
+
+    public function complete(Request $request, Order $order): JsonResponse
+    {
+        $this->authorize('complete', $order);
+
+        $order->update([
+            'status' => OrderStatus::Delivered,
+            'payment_status' => PaymentStatus::Paid,
+        ]);
+
+        $order->load(['customer:id,name,email', 'rider:id,name,email', 'shop:id,name,slug', 'items']);
+
+        $recipients = collect([$order->customer])
+            ->when($order->shop?->owner, fn ($collection) => $collection->push($order->shop->owner))
+            ->filter(fn (User $user) => $user->id !== $request->user()->id)
+            ->unique('id');
+
+        Notification::send($recipients, new OrderStatusUpdated($order));
+        Notification::send($recipients, new OrderPaymentUpdated($order));
 
         return response()->json([
             'order' => $order,
@@ -294,9 +340,12 @@ class OrderController extends Controller
         });
 
         if (! $claimed) {
-            throw ValidationException::withMessages([
-                'order' => ['This order was already claimed by another rider.'],
-            ]);
+            return response()->json([
+                'message' => 'This order was already claimed by another rider.',
+                'errors' => [
+                    'order' => ['This order was already claimed by another rider.'],
+                ],
+            ], 409);
         }
 
         $claimed->load(['customer:id,name,email', 'rider:id,name,email', 'shop:id,name,slug', 'items']);

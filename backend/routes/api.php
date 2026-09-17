@@ -1,7 +1,14 @@
 <?php
 
 use App\Enums\Role;
+use App\Http\Controllers\Api\Admin\BannerController as AdminBannerController;
+use App\Http\Controllers\Api\Admin\CustomerController as AdminCustomerController;
+use App\Http\Controllers\Api\Admin\OverviewController as AdminOverviewController;
+use App\Http\Controllers\Api\Admin\PageController as AdminPageController;
+use App\Http\Controllers\Api\Admin\RiderController as AdminRiderController;
+use App\Http\Controllers\Api\Admin\SettingController as AdminSettingController;
 use App\Http\Controllers\Api\Admin\ShopController as AdminShopController;
+use App\Http\Controllers\Api\CmsController;
 use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\GeocodeController;
 use App\Http\Controllers\Api\NotificationController;
@@ -19,6 +26,8 @@ Route::post('/login', [AuthController::class, 'login']);
 
 Route::get('/shops', [PublicShopController::class, 'index']);
 Route::get('/shops/{slug}', [PublicShopController::class, 'show']);
+Route::get('/cms', CmsController::class);
+Route::get('/pages/{slug}', [CmsController::class, 'showPage']);
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
@@ -42,7 +51,16 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/geocode', GeocodeController::class);
 
     Route::middleware('role:admin')->prefix('admin')->group(function () {
+        Route::get('overview', AdminOverviewController::class);
+        Route::get('live-orders', [AdminOverviewController::class, 'live']);
+        Route::get('customers', [AdminCustomerController::class, 'index']);
+        Route::get('customers/{customer}', [AdminCustomerController::class, 'show']);
+        Route::get('cms/settings', [AdminSettingController::class, 'show']);
+        Route::put('cms/settings', [AdminSettingController::class, 'update']);
+        Route::apiResource('cms/banners', AdminBannerController::class);
+        Route::apiResource('cms/pages', AdminPageController::class);
         Route::apiResource('shops', AdminShopController::class)->only(['index', 'store', 'show', 'update']);
+        Route::apiResource('riders', AdminRiderController::class)->only(['index', 'store', 'show', 'update']);
     });
 
     Route::middleware('role:shop')->prefix('shop')->group(function () {
@@ -59,6 +77,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::patch('orders/{order}/release', [ShopOrderController::class, 'release']);
     });
 
+    Route::get('orders/available', [OrderController::class, 'available']);
     Route::apiResource('orders', OrderController::class)->only(['index', 'store', 'show']);
     Route::post('orders/shop', [OrderController::class, 'storeShopOrder']);
     Route::patch('orders/{order}/status', [OrderController::class, 'updateStatus']);
@@ -66,4 +85,5 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::patch('orders/{order}/location', [OrderController::class, 'updateLocation']);
     Route::patch('orders/{order}/assign', [OrderController::class, 'assign']);
     Route::patch('orders/{order}/claim', [OrderController::class, 'claim']);
+    Route::patch('orders/{order}/complete', [OrderController::class, 'complete']);
 });

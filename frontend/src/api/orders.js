@@ -16,6 +16,11 @@ export async function listOrders({ page = 1, status = '', payment_status = '' } 
   return data
 }
 
+export async function listAvailableOrders(page = 1) {
+  const { data } = await api.get('/orders/available', { params: { page } })
+  return data
+}
+
 export async function listShopOrders({ page = 1, status = '' } = {}) {
   const { data } = await api.get('/shop/orders', {
     params: {
@@ -68,6 +73,11 @@ export async function assignOrder(id, riderId) {
 
 export async function claimOrder(id) {
   const { data } = await api.patch(`/orders/${id}/claim`)
+  return data.order
+}
+
+export async function completeOrder(id) {
+  const { data } = await api.patch(`/orders/${id}/complete`)
   return data.order
 }
 

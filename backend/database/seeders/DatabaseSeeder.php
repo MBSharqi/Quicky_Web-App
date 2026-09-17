@@ -88,5 +88,7 @@ class DatabaseSeeder extends Seeder
                 ]
             );
         }
+
+        $this->call(CmsSeeder::class);
     }
 }

@@ -26,7 +26,7 @@ export default function CheckoutPage() {
 
   if (!shop || items.length === 0) {
     return (
-      <div className="container py-5">
+      <div className="container py-5 page-shell">
         <h1 className="h3 mb-2">Checkout</h1>
         <p className="text-secondary mb-3">Your cart is empty.</p>
         <Link to="/" className="btn btn-success">Browse shops</Link>
@@ -75,7 +75,7 @@ export default function CheckoutPage() {
   }
 
   return (
-    <div className="container py-5" style={{ maxWidth: 720 }}>
+    <div className="container py-5 page-shell" style={{ maxWidth: 720 }}>
       <h1 className="h3 mb-1">Checkout</h1>
       <p className="text-secondary mb-4">
         Hi {user.name}. Place your COD order from {shop.name}.
@@ -83,7 +83,7 @@ export default function CheckoutPage() {
 
       {error && <div className="alert alert-danger">{error}</div>}
 
-      <div className="border rounded-3 bg-white p-4 mb-4">
+      <div className="surface-panel p-4 mb-4">
         <h2 className="h6 mb-3">Order summary · {itemCount} items</h2>
         <ul className="list-unstyled mb-3">
           {items.map((item) => (
@@ -107,7 +107,7 @@ export default function CheckoutPage() {
         </div>
       </div>
 
-      <form className="border rounded-3 bg-white p-4" onSubmit={handleSubmit}>
+      <form className="surface-panel p-4" onSubmit={handleSubmit}>
         <h2 className="h6 mb-3">Delivery details</h2>
 
         <div className="mb-3">

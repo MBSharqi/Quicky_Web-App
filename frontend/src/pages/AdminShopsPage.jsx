@@ -36,7 +36,6 @@ export default function AdminShopsPage() {
     <div className="container py-5">
       <div className="d-flex align-items-center justify-content-between gap-3 mb-4 flex-wrap">
         <div>
-          <h1 className="h3 mb-1">Shops</h1>
           <p className="text-secondary mb-0">Register and manage restaurants, hotels, and shops</p>
         </div>
         <Link to="/admin/shops/new" className="btn btn-success">

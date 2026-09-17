@@ -3,10 +3,12 @@ import { Link, NavLink } from 'react-router-dom'
 import { getUnreadCount } from '../api/notifications'
 import { useAuth } from '../context/AuthContext'
 import { useCart } from '../context/CartContext'
+import { useCms } from '../context/CmsContext'
 
 export default function AppHeader() {
   const { user, isAuthenticated, logout } = useAuth()
   const { itemCount } = useCart()
+  const { settings, pages } = useCms()
   const [unreadCount, setUnreadCount] = useState(0)
 
   useEffect(() => {
@@ -33,7 +35,6 @@ export default function AppHeader() {
 
     refreshCount()
     window.addEventListener('notifications:refresh', refreshCount)
-
     const intervalId = window.setInterval(refreshCount, 30000)
 
     return () => {
@@ -48,78 +49,74 @@ export default function AppHeader() {
   }
 
   return (
-    <header className="border-bottom bg-white sticky-top">
+    <header className="site-header">
       <div className="container py-3 d-flex align-items-center justify-content-between gap-3">
-        <Link to="/" className="text-decoration-none">
-          <span className="fs-4 fw-bold text-success">Quicky</span>
+        <Link to="/" className="text-decoration-none d-flex align-items-center gap-2">
+          {settings.logo_url ? (
+            <img src={settings.logo_url} alt={settings.brand_name} style={{ height: 34 }} />
+          ) : (
+            <span className="brand-mark">{settings.brand_name}</span>
+          )}
         </Link>
 
-        <nav className="d-flex align-items-center gap-3 flex-wrap justify-content-end">
-          <NavLink to="/" className="text-decoration-none" end>
-            Browse
-          </NavLink>
+        <nav className="site-nav d-flex align-items-center gap-3 flex-wrap justify-content-end">
+          <NavLink to="/" end>Browse</NavLink>
 
-          <NavLink to="/cart" className="text-decoration-none">
+          {pages.map((page) => (
+            <NavLink key={page.slug} to={`/p/${page.slug}`}>
+              {page.title}
+            </NavLink>
+          ))}
+
+          <NavLink to="/cart">
             Cart
-            {itemCount > 0 && (
-              <span className="badge text-bg-success ms-1">{itemCount}</span>
-            )}
+            {itemCount > 0 && <span className="nav-badge">{itemCount}</span>}
           </NavLink>
 
           {isAuthenticated ? (
             <>
-              <NavLink to="/dashboard" className="text-decoration-none">
-                Dashboard
-              </NavLink>
-
               {user.role === 'admin' && (
-                <NavLink to="/admin/shops" className="text-decoration-none">
-                  Shops
-                </NavLink>
+                <NavLink to="/admin">Admin</NavLink>
               )}
 
               {user.role === 'shop' && (
                 <>
-                  <NavLink to="/shop" className="text-decoration-none">
-                    My shop
-                  </NavLink>
-                  <NavLink to="/shop/menu" className="text-decoration-none">
-                    Menu
-                  </NavLink>
-                  <NavLink to="/orders" className="text-decoration-none">
-                    Orders
-                  </NavLink>
+                  <NavLink to="/shop">My shop</NavLink>
+                  <NavLink to="/shop/menu">Menu</NavLink>
+                  <NavLink to="/orders">Orders</NavLink>
                 </>
               )}
 
-              {['admin', 'customer', 'rider'].includes(user.role) && (
-                <NavLink to="/orders" className="text-decoration-none">
-                  Orders
+              {user.role === 'rider' && (
+                <>
+                  <NavLink to="/rider/jobs">Available jobs</NavLink>
+                  <NavLink to="/orders">Orders</NavLink>
+                </>
+              )}
+
+              {user.role === 'customer' && (
+                <>
+                  <NavLink to="/dashboard">Dashboard</NavLink>
+                  <NavLink to="/orders">Orders</NavLink>
+                </>
+              )}
+
+              {user.role !== 'admin' && (
+                <NavLink to="/notifications">
+                  Alerts
+                  {unreadCount > 0 && <span className="nav-badge">{unreadCount}</span>}
                 </NavLink>
               )}
 
-              <NavLink to="/notifications" className="text-decoration-none">
-                Notifications
-                {unreadCount > 0 && (
-                  <span className="badge text-bg-success ms-1">{unreadCount}</span>
-                )}
-              </NavLink>
-
-              <span className="text-secondary small">
-                {user.name} · {user.role}
-              </span>
+              <span className="text-secondary small">{user.name}</span>
               <button type="button" className="btn btn-outline-secondary btn-sm" onClick={handleLogout}>
                 Log out
               </button>
             </>
           ) : (
             <>
-              <NavLink to="/login" className="text-decoration-none">
-                Log in
-              </NavLink>
-              <NavLink to="/register" className="btn btn-success btn-sm">
-                Register
-              </NavLink>
+              <NavLink to="/login">Log in</NavLink>
+              <NavLink to="/register" className="btn btn-success btn-sm">Register</NavLink>
             </>
           )}
         </nav>

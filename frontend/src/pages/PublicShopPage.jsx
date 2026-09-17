@@ -86,65 +86,72 @@ export default function PublicShopPage() {
   }, {}) ?? {}
 
   return (
-    <div className="container py-5">
-      <div className="public-shop-header mb-4">
-        <Link to="/" className="small text-decoration-none text-secondary">← Back to browse</Link>
-        <div className="d-flex justify-content-between align-items-start gap-3 flex-wrap mt-2">
-          <div>
-            <div className="d-flex gap-2 mb-2">
-              <span className="badge text-bg-light text-capitalize">{shop.type}</span>
-              <span className={`badge ${shop.is_open ? 'text-bg-success' : 'text-bg-secondary'}`}>
-                {shop.is_open ? 'Open' : 'Closed'}
-              </span>
-            </div>
-            <h1 className="h2 mb-2">{shop.name}</h1>
-            <p className="text-secondary mb-0">{shop.city} · {shop.address}</p>
-            {shop.description && <p className="mt-3 mb-0">{shop.description}</p>}
-          </div>
-          <Link to="/cart" className="btn btn-outline-success">View cart</Link>
-        </div>
-      </div>
-
-      {notice && <div className="alert alert-light border">{notice}</div>}
-
-      {!shop.is_open && (
-        <div className="alert alert-warning">This shop is closed right now. You can browse the menu, but ordering is paused.</div>
-      )}
-
-      {Object.keys(grouped).length === 0 && (
-        <p className="text-secondary">No available items at the moment.</p>
-      )}
-
-      {Object.entries(grouped).map(([category, items]) => (
-        <section key={category} className="mb-5">
-          <h2 className="h4 mb-3">{category}</h2>
-          <div className="row g-3">
-            {items.map((item) => (
-              <div className="col-md-6" key={item.id}>
-                <div className="menu-item-card">
-                  <div className="d-flex justify-content-between gap-3">
-                    <div>
-                      <h3 className="h6 mb-1">{item.name}</h3>
-                      {item.description && (
-                        <p className="small text-secondary mb-2">{item.description}</p>
-                      )}
-                      <div className="fw-semibold text-success">{Number(item.price).toFixed(2)}</div>
-                    </div>
-                    <button
-                      type="button"
-                      className="btn btn-success btn-sm align-self-start"
-                      disabled={!shop.is_open}
-                      onClick={() => handleAddToCart(item)}
-                    >
-                      Add to cart
-                    </button>
-                  </div>
-                </div>
+    <div className="page-shell">
+      <section className="public-shop-hero">
+        <div className="container">
+          <Link to="/" className="small text-decoration-none">← Back to browse</Link>
+          <div className="d-flex justify-content-between align-items-end gap-3 flex-wrap mt-3">
+            <div>
+              <div className="shop-meta mb-2">
+                <span className="chip">{shop.type}</span>
+                <span className={`chip ${shop.is_open ? '' : 'chip-muted'}`}>
+                  {shop.is_open ? 'Open' : 'Closed'}
+                </span>
               </div>
-            ))}
+              <h1 className="display-6 fw-bold mb-2">{shop.name}</h1>
+              <p className="mb-0 opacity-75">{shop.city} · {shop.address}</p>
+            </div>
+            <Link to="/cart" className="btn btn-success">View cart</Link>
           </div>
-        </section>
-      ))}
+        </div>
+      </section>
+
+      <div className="container py-5">
+        {shop.description && (
+          <p className="lead text-secondary mb-4" style={{ maxWidth: 640 }}>{shop.description}</p>
+        )}
+
+        {notice && <div className="toast-notice mb-4">{notice}</div>}
+
+        {!shop.is_open && (
+          <div className="alert alert-warning">This shop is closed right now. You can browse the menu, but ordering is paused.</div>
+        )}
+
+        {Object.keys(grouped).length === 0 && (
+          <p className="text-secondary">No available items at the moment.</p>
+        )}
+
+        {Object.entries(grouped).map(([category, items]) => (
+          <section key={category} className="mb-5">
+            <h2 className="h4 mb-1">{category}</h2>
+            <div>
+              {items.map((item, index) => (
+                <div
+                  key={item.id}
+                  className="menu-item-row"
+                  style={{ animationDelay: `${Math.min(index, 10) * 40}ms` }}
+                >
+                  <div>
+                    <h3 className="h6 mb-1">{item.name}</h3>
+                    {item.description && (
+                      <p className="small text-secondary mb-2">{item.description}</p>
+                    )}
+                    <div className="fw-semibold text-success">{Number(item.price).toFixed(2)}</div>
+                  </div>
+                  <button
+                    type="button"
+                    className="btn btn-success btn-sm align-self-center"
+                    disabled={!shop.is_open}
+                    onClick={() => handleAddToCart(item)}
+                  >
+                    Add
+                  </button>
+                </div>
+              ))}
+            </div>
+          </section>
+        ))}
+      </div>
     </div>
   )
 }
