@@ -19,5 +19,6 @@ class AppServiceProvider extends ServiceProvider
         Gate::define('access-admin', fn (User $user): bool => $user->role === Role::Admin);
         Gate::define('access-rider', fn (User $user): bool => $user->role === Role::Rider);
         Gate::define('access-customer', fn (User $user): bool => $user->role === Role::Customer);
+        Gate::define('access-shop', fn (User $user): bool => $user->role === Role::Shop);
     }
 }

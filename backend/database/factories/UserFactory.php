@@ -51,10 +51,10 @@ class UserFactory extends Factory
         ]);
     }
 
-    public function customer(): static
+    public function shop(): static
     {
         return $this->state(fn (array $attributes) => [
-            'role' => Role::Customer,
+            'role' => Role::Shop,
         ]);
     }
 }
